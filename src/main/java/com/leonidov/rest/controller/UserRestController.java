@@ -1,11 +1,10 @@
 package com.leonidov.rest.controller;
 
-import com.leonidov.rest.data.JdbcOperationsUserRepository;
 import com.leonidov.rest.exception.ErrorResponse;
 import com.leonidov.rest.model.NewUserPayload;
 import com.leonidov.rest.model.User;
+import com.leonidov.rest.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +18,12 @@ import java.util.*;
 @RequestMapping("/api/users")
 public class UserRestController {
 
-    private final JdbcOperationsUserRepository jdbcOperationsUserRepository;
+    private final UserService userService;
     private final MessageSource messageSource;
 
-    @Autowired
-    public UserRestController(JdbcOperationsUserRepository jdbcOperationsUserRepository,
+    public UserRestController(UserService userService,
                               MessageSource messageSource) {
-        this.jdbcOperationsUserRepository = jdbcOperationsUserRepository;
+        this.userService = userService;
         this.messageSource = messageSource;
     }
 
@@ -33,12 +31,7 @@ public class UserRestController {
     public ResponseEntity<List<User>> handleGetAllUsers() {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.jdbcOperationsUserRepository.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> handleGetUser(@PathVariable UUID id) {
-        return ResponseEntity.of(jdbcOperationsUserRepository.findById(id));
+                .body(this.userService.findAll());
     }
 
     @PostMapping()
@@ -46,7 +39,7 @@ public class UserRestController {
     public ResponseEntity<?> handleAddNewUser(@Valid @RequestBody NewUserPayload payload,
             UriComponentsBuilder uriComponentsBuilder, Locale locale) {
 
-        if (jdbcOperationsUserRepository.findByUsername(payload.username()).isPresent())
+        if (userService.findByUsername(payload.username()).isPresent())
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse("Ошибка",
@@ -56,7 +49,7 @@ public class UserRestController {
         User user = new User(payload.name(), payload.surname(),
                 payload.username(), payload.password());
 
-        jdbcOperationsUserRepository.save(user);
+        userService.saveOrUpdate(user);
 
         return ResponseEntity.created(
                         uriComponentsBuilder.path("/api/users/{id}")
@@ -65,18 +58,23 @@ public class UserRestController {
                         .body(user);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<User> handleGetUser(@PathVariable UUID id) {
+        return ResponseEntity.of(userService.findById(id));
+    }
+
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<?> handleDeleteUser(@PathVariable UUID id, Locale locale) {
 
-        if (jdbcOperationsUserRepository.findById(id).isEmpty())
+        if (userService.findById(id).isEmpty())
             return ResponseEntity.badRequest()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse("Ошибка",
                             List.of(messageSource.getMessage(
                                     "user.errors.find_by_id_not_exists", new Object[0], locale))));
 
-        jdbcOperationsUserRepository.deleteById(id);
+        userService.deleteById(id);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -85,11 +83,11 @@ public class UserRestController {
                                 "user.success.delete", new Object[0], locale))));
     }
 
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<?> handleUpdateUser(@PathVariable UUID id, @Valid @RequestBody NewUserPayload payload,
                                               UriComponentsBuilder uriComponentsBuilder, Locale locale) {
-        Optional<User> user = jdbcOperationsUserRepository.findById(id);
+        Optional<User> user = userService.findById(id);
 
         if (user.isEmpty())
             return ResponseEntity.badRequest()
@@ -101,7 +99,7 @@ public class UserRestController {
         User updatedUser = new User(user.get().id(), payload.name(), payload.surname(),
                 payload.username(), payload.password());
 
-        jdbcOperationsUserRepository.save(updatedUser);
+        userService.saveOrUpdate(updatedUser);
 
         return ResponseEntity.created(
                         uriComponentsBuilder.path("/api/users/get/{id}")

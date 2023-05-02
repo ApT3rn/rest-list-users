@@ -1,7 +1,6 @@
 package com.leonidov.rest.data;
 
 import com.leonidov.rest.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -17,7 +16,6 @@ public class JdbcOperationsUserRepositoryImpl implements JdbcOperationsUserRepos
 
     private final JdbcOperations jdbcOperations;
 
-    @Autowired
     public JdbcOperationsUserRepositoryImpl(JdbcOperations jdbcOperations) {
         this.jdbcOperations = jdbcOperations;
     }
@@ -41,14 +39,16 @@ public class JdbcOperationsUserRepositoryImpl implements JdbcOperationsUserRepos
 
     @Override
     public void save(User user) {
-        if (findById(user.id()).isPresent())
-            this.jdbcOperations.update("""
-                    UPDATE t_users SET c_name=?, c_surname=?, c_username=?, c_password=? WHERE id=?
-                    """, new Object[]{user.name(), user.surname(), user.username(), user.password(), user.id()});
-        else
             this.jdbcOperations.update("""
                         INSERT INTO t_users(id, c_name, c_surname, c_username, c_password) VALUES (?, ?, ?, ?, ?)
                     """, new Object[]{user.id(), user.name(), user.surname(), user.username(), user.password()});
+    }
+
+    @Override
+    public void update(User user) {
+        this.jdbcOperations.update("""
+                    UPDATE t_users SET c_name=?, c_surname=?, c_username=?, c_password=? WHERE id=?
+                    """, new Object[]{user.name(), user.surname(), user.username(), user.password(), user.id()});
     }
 
     @Override

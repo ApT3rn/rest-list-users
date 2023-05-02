@@ -24,7 +24,6 @@ class UserRestControllerIT {
 
     @Test
     void handleGetAllUsers_ReturnsValidResponseEntity() throws Exception {
-
         var requestBuilder = get("/api/users");
 
         this.mockMvc.perform(requestBuilder)
@@ -74,7 +73,6 @@ class UserRestControllerIT {
 
     @Test
     void handleGetUser_PayloadInvalid_ReturnValidResponseEntity() throws Exception {
-
         var requestBuilder = get("/api/users/0eacaeaa-42b4-490a-a2ef-d9afe8580bc9");
 
         this.mockMvc.perform(requestBuilder)
@@ -185,7 +183,7 @@ class UserRestControllerIT {
 
     @Test
     void handleUpdateUser_PayloadIsValid_ReturnValidResponseEntity() throws Exception {
-        var requestBuilder = post("/api/users/2eacaeaa-42b4-490a-a2ef-d9afe8580bc9")
+        var requestBuilder = put("/api/users/2eacaeaa-42b4-490a-a2ef-d9afe8580bc9")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         """
@@ -217,7 +215,7 @@ class UserRestControllerIT {
 
     @Test
     void handleUpdateUser_PayloadInvalid_ReturnValidResponseEntity() throws Exception {
-        var requestBuilder = post("/api/users/1eacaeaa-42b4-490a-a2ef-d9afe8580bc0")
+        var requestBuilder = put("/api/users/1eacaeaa-42b4-490a-a2ef-d9afe8580bc0")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                         """

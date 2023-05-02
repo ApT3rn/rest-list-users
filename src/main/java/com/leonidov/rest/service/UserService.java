@@ -1,4 +1,4 @@
-package com.leonidov.rest.data;
+package com.leonidov.rest.service;
 
 import com.leonidov.rest.model.User;
 
@@ -6,14 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface JdbcOperationsUserRepository {
+public interface UserService {
 
     List<User> findAll();
     Optional<User> findById(UUID id);
     Optional<User> findByUsername(String username);
-    void save(User user);
-
-    public void update(User user);
+    void saveOrUpdate(User user);
     void deleteById(UUID id);
 
 }
