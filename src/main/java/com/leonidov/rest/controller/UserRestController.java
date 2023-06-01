@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -34,8 +33,7 @@ public class UserRestController {
                 .body(this.userService.findAll());
     }
 
-    @PostMapping()
-    @Transactional
+    @PostMapping
     public ResponseEntity<?> handleAddNewUser(@Valid @RequestBody NewUserPayload payload,
             UriComponentsBuilder uriComponentsBuilder, Locale locale) {
 
@@ -64,7 +62,6 @@ public class UserRestController {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> handleDeleteUser(@PathVariable UUID id, Locale locale) {
 
         if (userService.findById(id).isEmpty())
@@ -84,7 +81,6 @@ public class UserRestController {
     }
 
     @PutMapping("/{id}")
-    @Transactional
     public ResponseEntity<?> handleUpdateUser(@PathVariable UUID id, @Valid @RequestBody NewUserPayload payload,
                                               UriComponentsBuilder uriComponentsBuilder, Locale locale) {
         Optional<User> user = userService.findById(id);
